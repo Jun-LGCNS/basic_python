@@ -1,0 +1,65 @@
+"""RAG 분기 그래프 노드 구현.
+
+이 파일의 목적:
+- 의도 분류, RAG 문서 주입, 일반 생성 경로 구성을 노드 단위로 분리합니다.
+
+포함 내용:
+- ClassifyIntentNode
+- MockRagNode
+- GenerateNode
+- route_after_intent 함수
+
+사용 시점:
+- 그래프 빌더에서 노드를 조합해 분기 워크플로를 만들 때 사용합니다.
+"""
+
+from typing import Literal
+
+from src.services.llm_gateway import LlmGateway
+from src.services.rag_graph.state import ChatGraphState
+from src.services.rag_graph.state_keys import KEY_DOCUMENTS, KEY_INTENT, KEY_USER_MESSAGE
+from src.services.retrieval.mock_rag_store import get_mock_rag_documents
+
+
+class ClassifyIntentNode:
+    """사용자 입력 의도를 분류하는 노드."""
+
+    def __init__(self, llm_gateway: LlmGateway) -> None:
+        self._llm_gateway = llm_gateway
+
+    def __call__(self, state: ChatGraphState) -> ChatGraphState:
+        """LLM 호출 결과를 상태의 intent에 기록합니다."""
+        # Step 1. 사용자 입력을 기반으로 rag/general 의도를 분류합니다.
+        user_message = state.get(KEY_USER_MESSAGE, "")
+        state[KEY_INTENT] = self._llm_gateway.classify_intent(user_message)
+        return state
+
+
+class MockRagNode:
+    """RAG 목업 문서를 상태에 주입하는 노드."""
+
+    def __call__(self, state: ChatGraphState) -> ChatGraphState:
+        """고정 문서 3개를 상태에 기록합니다."""
+        # Step 2. RAG 경로에서는 mock 문서를 컨텍스트로 준비합니다.
+        state[KEY_DOCUMENTS] = get_mock_rag_documents()
+        return state
+
+
+class GenerateNode:
+    """최종 생성 이전 공통 정리 노드."""
+
+    def __call__(self, state: ChatGraphState) -> ChatGraphState:
+        """일반 경로에서는 문서 목록을 빈 배열로 고정합니다."""
+        # Step 3. 일반 경로에서는 문서 컨텍스트를 비워 final 생성으로 넘깁니다.
+        if state.get(KEY_INTENT, "general") == "general":
+            state[KEY_DOCUMENTS] = []
+        return state
+
+
+def route_after_intent(state: ChatGraphState) -> Literal["rag", "general"]:
+    """의도 분류 결과에 따라 다음 노드를 결정합니다."""
+    intent = state.get(KEY_INTENT, "general")
+    if intent == "rag":
+        return "rag"
+    return "general"
+

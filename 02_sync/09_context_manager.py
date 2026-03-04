@@ -7,7 +7,6 @@ class MyResource:
         print("리소스 해제")
 
 
-
 import asyncio
 
 class AsyncResource:
