@@ -26,7 +26,7 @@ def _create_client(database_path: str) -> TestClient:
     """DB 검증용 앱 클라이언트를 생성합니다."""
     settings = AppSettings(
         database_path=database_path,
-        llm_endpoint="http://35.216.126.198:31178/api/infer/IML2026020001/v1/chat/completions",
+        llm_endpoint="http://35.216.126.198:31933/api/infer/IML2026020001/v1/chat/completions",
         llm_model="/repository/binary/BIN0016",
         llm_temperature=0.6,
         llm_max_tokens=200,

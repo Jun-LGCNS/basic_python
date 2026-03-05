@@ -22,7 +22,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from src.core.config import AppSettings
 from src.main import create_app
 
-LLM_ENDPOINT = "http://35.216.126.198:31178/api/infer/IML2026020001/v1/chat/completions"
+LLM_ENDPOINT = "http://35.216.126.198:31933/api/infer/IML2026020001/v1/chat/completions"
 LLM_MODEL = "/repository/binary/BIN0016"
 RAG_QUESTION = "LangGraph에 대해 RAG로 검색해서 알려줘."
 GENERAL_QUESTION = "안녕? 너는 누구니?"

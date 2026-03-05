@@ -70,11 +70,9 @@ class HttpLlmGateway:
         # Step 2. self._chat_model.invoke로 non-stream 호출하세요.
         # Step 3. parse_intent로 결과를 `rag/general`로 정규화하세요.
         system_prompt = (
-            "You are an intent classifier.\n"
-            "Classify the user's message into exactly one label: rag or general.\n"
-            "- rag: The user asks for factual, document-specific, or retrieval-needed info.\n"
-            "- general: Small talk, creative writing, opinions, generic questions.\n"
-            "Return ONLY one word: rag or general."
+            "You are an intent classifier. Output EXACTLY one-line JSON and nothing else. "
+            "Valid outputs: {\"intent\":\"rag\"} or {\"intent\":\"general\"}. "
+            "Do not add any explanation, do not wrap in markdown, do not print anything else."
         )
         lc_messages: list[BaseMessage] = [
             SystemMessage(content=system_prompt),

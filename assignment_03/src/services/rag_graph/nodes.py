@@ -32,15 +32,20 @@ class ClassifyIntentNode:
         # Step 1. state에서 사용자 질문을 읽으세요.
         # Step 2. llm_gateway.classify_intent를 호출하세요.
         # Step 3. state[KEY_INTENT]에 결과를 저장해 반환하세요.
-        raise NotImplementedError("ClassifyIntentNode.__call__을 구현하세요.")
-
+        message = state[KEY_USER_MESSAGE]
+        intent = self._llm_gateway.classify_intent(message)
+        if intent == "rag":
+            state[KEY_INTENT] = "rag"
+        else:
+            state[KEY_INTENT] = "general"
+        return state
 
 class MockRagNode:
     """RAG 목업 문서를 상태에 주입하는 노드."""
 
     def __call__(self, state: ChatGraphState) -> ChatGraphState:
         """고정 문서 3개를 상태에 기록합니다."""
-        state[KEY_DOCUMENTS] = get_mock_rag_documents()
+        state[KEY_DOCUMENTS] = get_mock_rag_documents(state[KEY_USER_MESSAGE])
         return state
 
 
@@ -58,5 +63,8 @@ def route_after_intent(state: ChatGraphState) -> Literal["rag", "general"]:
     """의도 분류 결과에 따라 다음 노드를 결정합니다."""
     # Step 1. state에서 intent를 읽으세요.
     # Step 2. intent가 "rag"면 "rag"를 반환하고, 그 외에는 "general"을 반환하세요.
-    raise NotImplementedError("route_after_intent를 구현하세요.")
-
+    if state[KEY_INTENT] == "rag":
+        return "rag"
+    else:
+        return "general"
+    

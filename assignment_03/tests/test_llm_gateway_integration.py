@@ -18,7 +18,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.services.llm_gateway import HttpLlmGateway
 
-LLM_ENDPOINT = "http://35.216.126.198:31178/api/infer/IML2026020001/v1/chat/completions"
+LLM_ENDPOINT = "http://35.216.126.198:31933/api/infer/IML2026020001/v1/chat/completions"
 LLM_MODEL = "/repository/binary/BIN0016"
 
 

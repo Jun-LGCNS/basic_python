@@ -9,36 +9,76 @@
 사용 시점:
 - 실제 검색기 없이 분기 흐름과 응답 포맷을 검증할 때 사용합니다.
 """
+from __future__ import annotations
 
-from src.models.chat import RagDocument
+from typing import Any
+import requests
+
+from src.models.chat import RagDocument  # 너희 프로젝트 경로에 맞게 유지/수정
+
+import requests
+from typing import List, Dict, Any
+
+BASE_URL = "http://35.216.126.198:30585"
+VECTORDB_PATH = "/api/v1/search/vectordb"
+
+ACCESS_KEY = "9507640340643580a33665b9e2d214d28cabb8bd7926b1c930229b6bc6e38abb"
+COLLECTION_ALIAS = "PJT20260025_pipeline_test_sj"
 
 
-def get_mock_rag_documents() -> list[RagDocument]:
-    """LangGraph 주제의 고정 문서 3개를 반환합니다."""
+def get_mock_rag_documents(question: str) -> List[Dict[str, Any]]:
+    url = f"{BASE_URL}{VECTORDB_PATH}"
+    payload = {
+        "access_key": ACCESS_KEY,
+        "collection_alias": COLLECTION_ALIAS,
+        "question": question,
+        "topK": 5,         
+        "hybrid_yn": True,
+        "alpha": 0.5,
+    }
+
+    resp = requests.post(url, json=payload, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
+
     return [
-        RagDocument(
-            title="LangGraph 상태 모델 기초",
-            content=(
-                "LangGraph는 상태 딕셔너리를 중심으로 노드 간 데이터를 전달합니다. "
-                "초기 상태 키를 명확히 두면 분기 흐름 추적이 쉬워집니다."
-            ),
-            page_number=0,
-        ),
-        RagDocument(
-            title="조건 분기와 라우팅 패턴",
-            content=(
-                "의도 분류 노드 뒤에서 조건 분기를 연결하면 RAG 경로와 일반 생성 경로를 "
-                "명확히 분리할 수 있습니다."
-            ),
-            page_number=0,
-        ),
-        RagDocument(
-            title="스트리밍 응답 설계 팁",
-            content=(
-                "최종 생성 노드에서 스트리밍을 사용할 때는 chunk 이벤트와 final 이벤트를 "
-                "분리해 전송하면 클라이언트 처리 로직이 단순해집니다."
-            ),
-            page_number=0,
-        ),
+    RagDocument(
+        title=(item.get("source") or ""),
+        content=item.get("content", ""),
+        page_number=item.get("page", 0),
+    )
+    for item in data.get("result", [])
     ]
+
+# from src.models.chat import RagDocument
+
+
+# def get_mock_rag_documents() -> list[RagDocument]:
+#     """LangGraph 주제의 고정 문서 3개를 반환합니다."""
+#     return [
+#         RagDocument(
+#             title="LangGraph 상태 모델 기초",
+#             content=(
+#                 "LangGraph는 상태 딕셔너리를 중심으로 노드 간 데이터를 전달합니다. "
+#                 "초기 상태 키를 명확히 두면 분기 흐름 추적이 쉬워집니다."
+#             ),
+#             page_number=0,
+#         ),
+#         RagDocument(
+#             title="조건 분기와 라우팅 패턴",
+#             content=(
+#                 "의도 분류 노드 뒤에서 조건 분기를 연결하면 RAG 경로와 일반 생성 경로를 "
+#                 "명확히 분리할 수 있습니다."
+#             ),
+#             page_number=0,
+#         ),
+#         RagDocument(
+#             title="스트리밍 응답 설계 팁",
+#             content=(
+#                 "최종 생성 노드에서 스트리밍을 사용할 때는 chunk 이벤트와 final 이벤트를 "
+#                 "분리해 전송하면 클라이언트 처리 로직이 단순해집니다."
+#             ),
+#             page_number=0,
+#         ),
+#     ]
 
